@@ -85,7 +85,8 @@
 		            <outputDirectory>${basedir}/target/classes/static/</outputDirectory>
 		            <resources>
 		              <resource>
-		                <directory>${basedir}/../angular-8-crud-app/static</directory>
+		                <!-- <directory>${basedir}/../angular-8-crud-app/static</directory>  -->
+		                <directory>${basedir}/src/main/resources/static</directory>
 		              </resource>
 		            </resources>
 		          </configuration>
