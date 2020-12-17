@@ -1,6 +1,7 @@
 HELP.md
 target/
 uploads/
+bin/
 tomcat/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
