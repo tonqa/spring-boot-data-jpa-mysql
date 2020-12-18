@@ -1,19 +1,18 @@
 package com.bezkoder.spring.security;
 
 import java.util.Arrays;
-import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
@@ -23,7 +22,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // (1)
   @Override
   protected void configure(HttpSecurity http) throws Exception {  // (2)
       http
-      	.csrf().disable()
+      	.csrf()
+      		//.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
+      		.disable()
       	.cors().configurationSource(request -> {
       		CorsConfiguration cors = new CorsConfiguration();
             cors.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
@@ -34,6 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // (1)
       		.and()
         .authorizeRequests()
           .antMatchers("/", "/api/*").permitAll() // (3)
+          //.antMatchers("/api/*").hasAuthority("ROLE_USER")
           .anyRequest().authenticated() // (4)
           .and()
        .formLogin() // (5)
@@ -59,11 +61,35 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // (1)
 //	}
 	
     
-	@Override
-	public void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.inMemoryAuthentication()
-			.withUser("user")
-			.password("{noop}password")
-			.roles("USER");
-	}
+//	@Override
+//	public void configure(AuthenticationManagerBuilder auth) throws Exception {
+//		auth.inMemoryAuthentication()
+//			.withUser("user")
+//			.password("{bcrypt}$2y$12$Few517JLmo1AjVvRfoMWMezBajr6kAo3zKYITdqZNHzh/k4F.CEHG")
+//			.roles("USER");
+//	}
+  
+  @Bean
+  @Override
+  public UserDetailsService userDetailsService() {
+	  return new UserDetailsService() {
+
+		@Override
+		public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+			if (username.equals("user")) {
+				return new User("user", 
+						"$2y$12$Few517JLmo1AjVvRfoMWMezBajr6kAo3zKYITdqZNHzh/k4F.CEHG", 
+						Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
+			}
+			return null;
+		}
+		  
+	  };
+  }
+  
+  @Bean
+  public BCryptPasswordEncoder bCryptPasswordEncoder() {
+      return new BCryptPasswordEncoder();
+  }
+  
 }
